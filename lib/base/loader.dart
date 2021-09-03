@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fimage/base/decoder.dart';
 import 'package:fimage/base/image_info.dart';
 import 'package:fimage/gif/gif_decoder.dart';
@@ -46,6 +47,9 @@ Future<Uint8List> loadImage(ImageProvider provider) async {
     data = await provider.file.readAsBytes();
   } else if (provider is MemoryImage) {
     data = provider.bytes;
+  } else if (provider is CachedNetworkImageProvider) {
+    final image = await provider.cacheManager!.getSingleFile(provider.url);
+    data = await image.readAsBytes();
   }
   return data;
 }
@@ -86,7 +90,9 @@ void fetchImage(ImageProvider provider,
             ? provider.keyName + (provider.bundle?.toString() ?? "")
             : provider is MemoryImage
                 ? provider.bytes.toString()
-                : "";
+                : provider is CachedNetworkImageProvider
+                    ? provider.url
+                    : "";
 
     if (key.isEmpty) return;
 
