@@ -3,33 +3,32 @@ import 'package:fimage/base/decoder.dart';
 import 'package:fimage/base/image_info.dart';
 import 'package:fimage/base/loader.dart';
 import 'package:fimage/gif/gif_decoder.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 extension FSafeMap on Map {
-  String getString(key, {String def}) {
+  String getString(key, {required String def}) {
     if (this[key] is String) {
       return this[key];
     }
     return def;
   }
 
-  int getInt(key, {int def}) {
+  int getInt(key, {required int def}) {
     if (this[key] is int) {
       return this[key];
     }
     return def;
   }
 
-  bool getBool(key, {bool def}) {
+  bool getBool(key, {required bool def}) {
     if (this[key] is bool) {
       return this[key];
     }
     return def;
   }
 
-  T get<T>(key, {T def}) {
+  T get<T>(key, {required T def}) {
     if (this[key] is T) {
       return this[key];
     }
@@ -56,12 +55,12 @@ class FImageController extends AnimationController {
   int get curRepetitionCount => _curRepetitionCount;
 
   FImageController(
-      {@required TickerProvider vsync,
+      {required TickerProvider vsync,
       double value = 0.0,
-      Duration reverseDuration,
-      Duration duration,
+      Duration? reverseDuration,
+      Duration? duration,
       this.repetitionCount = -2,
-      AnimationBehavior animationBehavior})
+      AnimationBehavior? animationBehavior})
       : super(
             value: value,
             reverseDuration: reverseDuration,
@@ -76,7 +75,7 @@ class FImageController extends AnimationController {
 
   set(key, value) => _map[key] = value;
 
-  T get<T>(key, {T def}) {
+  T get<T>(key, {required T def}) {
     if (_map[key] is T) {
       return _map[key];
     }
@@ -98,10 +97,9 @@ class FImageController extends AnimationController {
   }
 }
 
-// ignore: must_be_immutable
 class FImage extends StatefulWidget {
   FImage({
-    @required this.imageProvider,
+    required this.imageProvider,
     this.controller,
     this.decoder,
     this.needRepaintBoundary = true,
@@ -118,25 +116,25 @@ class FImage extends StatefulWidget {
     this.centerSlice,
     this.matchTextDirection = false,
     this.frameBuilder,
-  }) : assert(imageProvider != null);
+  });
 
-  final FOnFetchCompleted onFetchCompleted;
-  final FImageController controller;
+  final FOnFetchCompleted? onFetchCompleted;
+  final FImageController? controller;
   final ImageProvider imageProvider;
-  final Decoder decoder;
+  final Decoder? decoder;
   final bool needRepaintBoundary;
-  final double width;
-  final double height;
-  final Color color;
-  final BlendMode colorBlendMode;
-  final BoxFit fit;
+  final double? width;
+  final double? height;
+  final Color? color;
+  final BlendMode? colorBlendMode;
+  final BoxFit? fit;
   final AlignmentGeometry alignment;
   final ImageRepeat repeat;
-  final Rect centerSlice;
+  final Rect? centerSlice;
   final bool matchTextDirection;
-  final String semanticLabel;
+  final String? semanticLabel;
   final bool excludeFromSemantics;
-  final FImageFrameBuilder frameBuilder;
+  final FImageFrameBuilder? frameBuilder;
 
   @override
   State<StatefulWidget> createState() {
@@ -145,16 +143,16 @@ class FImage extends StatefulWidget {
 }
 
 class _FImageState extends State<FImage> with TickerProviderStateMixin {
-  BaseMultiImageInfo _multiImageInfo;
+  BaseMultiImageInfo? _multiImageInfo;
   int _curIndex = 0;
   int _curRepetitionCount = 0;
   bool _fetchComplete = false;
   bool isAutoController = false;
-  FImageController controller;
+  FImageController? controller;
 
-  ImageInfo get _imageInfo {
+  ImageInfo? get _imageInfo {
     if (_getInfoLength <= _curIndex) return null;
-    return _multiImageInfo?.frameInfoList[_curIndex];
+    return _multiImageInfo?.frameInfoList![_curIndex];
   }
 
   int get _getInfoLength {
@@ -163,15 +161,15 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
 
   int get _getNextIndex {
     if (controller == null) return 0;
-    var nextIndex = (controller.value /
-            (controller.upperBound - controller.lowerBound) *
+    var nextIndex = (controller!.value /
+            (controller!.upperBound - controller!.lowerBound) *
             (_getInfoLength - 1))
         .floor();
     if (nextIndex == _getInfoLength - 1 &&
-        (controller.repetitionCount > _curRepetitionCount ||
-            controller.repetitionCount == -1)) {
+        (controller!.repetitionCount > _curRepetitionCount ||
+            controller!.repetitionCount == -1)) {
       _curRepetitionCount++;
-      if (mounted) controller.forward(from: controller.lowerBound);
+      if (mounted) controller!.forward(from: controller!.lowerBound);
     }
     return nextIndex;
   }
@@ -185,11 +183,11 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    super.dispose();
     controller?.removeListener(_listener);
     if (isAutoController) {
       controller?.dispose();
     }
+    super.dispose();
   }
 
   @override
@@ -205,7 +203,7 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
       isAutoController = false;
       controller?.removeListener(_listener);
       controller = widget.controller;
-      controller.addListener(_listener);
+      controller?.addListener(_listener);
     }
   }
 
@@ -213,7 +211,7 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
     if (mounted && controller == null && _getInfoLength > 1) {
       isAutoController = true;
       controller = FImageController(vsync: this);
-      controller.addListener(_listener);
+      controller?.addListener(_listener);
     }
   }
 
@@ -233,7 +231,8 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
         firstFrameListener: (firstImageInfo) {
       if (mounted) {
         setState(() {
-          _multiImageInfo = BaseMultiImageInfo(frameInfoList: [firstImageInfo]);
+          _multiImageInfo = BaseMultiImageInfo(
+              frameInfoList: [if (firstImageInfo != null) firstImageInfo]);
           _curIndex = 0;
         });
       }
@@ -245,20 +244,20 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
         _curIndex = _getNextIndex;
         _needAutoController();
         controller?.duration =
-            widget.controller?.duration ?? _multiImageInfo.totalDuration;
+            widget.controller?.duration ?? _multiImageInfo!.totalDuration;
         controller?.set('onFetchCompleted', true);
         if (_getInfoLength > 1) {
-          if (controller.repetitionCount == -2) {
-            controller.repetitionCount = _multiImageInfo.repetitionCount;
+          if (controller!.repetitionCount == -2) {
+            controller!.repetitionCount = _multiImageInfo!.repetitionCount;
           }
         }
         if (widget.onFetchCompleted != null) {
-          widget.onFetchCompleted(_multiImageInfo);
+          widget.onFetchCompleted!(_multiImageInfo!);
         }
         if (_getInfoLength > 1) {
           setState(() {
             if (isAutoController) {
-              controller.forward();
+              controller!.forward();
             }
           });
         }
@@ -298,7 +297,7 @@ class _FImageState extends State<FImage> with TickerProviderStateMixin {
       );
     }
     if (widget.frameBuilder != null) {
-      result = widget.frameBuilder(
+      result = widget.frameBuilder!(
           context,
           result,
           _multiImageInfo != null ? _curIndex : -1,

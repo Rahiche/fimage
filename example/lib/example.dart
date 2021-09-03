@@ -39,8 +39,8 @@ class _GifExampleState extends State<GifExample> with TickerProviderStateMixin {
     super.initState();
     controller1 = FImageController(vsync: this);
     controller2 = FImageController(vsync: this);
-    controllers = List(listLen);
-    showed = List(listLen)..fillRange(0, listLen, false);
+    controllers = List.filled(listLen, null);
+    showed = List.empty()..fillRange(0, listLen, false);
   }
 
   @override

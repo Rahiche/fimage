@@ -15,14 +15,14 @@ HttpClient get _httpClient {
   HttpClient client = _sharedHttpClient;
   assert(() {
     if (debugNetworkImageHttpClientProvider != null)
-      client = debugNetworkImageHttpClientProvider();
+      client = debugNetworkImageHttpClientProvider!();
     return true;
   }());
   return client;
 }
 
 Future<Uint8List> loadImage(ImageProvider provider) async {
-  Uint8List data;
+  late Uint8List data;
   if (provider is NetworkImage) {
     final Uri resolved = Uri.base.resolve(provider.url);
     final HttpClientRequest request = await _httpClient.getUrl(resolved);
@@ -50,21 +50,21 @@ Future<Uint8List> loadImage(ImageProvider provider) async {
   return data;
 }
 
-typedef FirstFrameListener = Function(BaseImageInfo firstImageInfo);
-typedef AllFrameListener = Function(BaseMultiImageInfo allImageInfo);
+typedef FirstFrameListener = Function(BaseImageInfo? firstImageInfo);
+typedef AllFrameListener = Function(BaseMultiImageInfo? allImageInfo);
 
-final Map<String, List<AllFrameListener>> _allFrameMap = Map();
-final Map<String, List<FirstFrameListener>> _firstFrameMap = Map();
+final Map<String, List<AllFrameListener?>> _allFrameMap = Map();
+final Map<String, List<FirstFrameListener?>> _firstFrameMap = Map();
 
 void _addToFrameMap(FirstFrameListener firstFrameListener,
     AllFrameListener allFrameListener, String key) {
   _firstFrameMap.update(key, (value) {
-    value?.add(firstFrameListener);
+    value.add(firstFrameListener);
     return value;
   }, ifAbsent: () => []..add(firstFrameListener));
 
   _allFrameMap.update(key, (value) {
-    value?.add(allFrameListener);
+    value.add(allFrameListener);
     return value;
   }, ifAbsent: () => []..add(allFrameListener));
 }
@@ -72,12 +72,12 @@ void _addToFrameMap(FirstFrameListener firstFrameListener,
 ///request image
 ///Can be called before use for pre-loading
 void fetchImage(ImageProvider provider,
-    {Decoder decoder,
-    FirstFrameListener firstFrameListener,
-    AllFrameListener allFrameListener}) async {
-  BaseMultiImageInfo info;
+    {Decoder? decoder,
+    FirstFrameListener? firstFrameListener,
+    AllFrameListener? allFrameListener}) async {
+  late BaseMultiImageInfo info;
   dynamic data;
-  String key;
+  late String key;
 
   try {
     key = provider is NetworkImage
@@ -87,20 +87,21 @@ void fetchImage(ImageProvider provider,
             : provider is MemoryImage
                 ? provider.bytes.toString()
                 : "";
-    if (key == null || key.isEmpty) return;
+
+    if (key.isEmpty) return;
 
     if (fImageCache.get(key) != null) {
       print('fetchImage use cache');
-      info = fImageCache.get(key);
+      info = fImageCache.get(key)!;
       firstFrameListener
-          ?.call(info.frameCount > 0 ? info.frameInfoList[0] : null);
+          ?.call(info.frameCount > 0 ? info.frameInfoList![0] : null);
       return allFrameListener?.call(info);
     } else if (fImageCache.containsKey(key)) {
-      _addToFrameMap(firstFrameListener, allFrameListener, key);
+      _addToFrameMap(firstFrameListener!, allFrameListener!, key);
       return;
     } else {
       fImageCache.putIfAbsent(key, () => null);
-      _addToFrameMap(firstFrameListener, allFrameListener, key);
+      _addToFrameMap(firstFrameListener!, allFrameListener!, key);
     }
 
     data = await loadImage(provider);
@@ -113,7 +114,7 @@ void fetchImage(ImageProvider provider,
           element?.call(imageInfo);
           element = null;
         });
-        list.clear();
+        list?.clear();
       }
     });
     fImageCache.update(key, (value) => info, () => info);
@@ -123,7 +124,7 @@ void fetchImage(ImageProvider provider,
         element?.call(info);
         element = null;
       });
-      list.clear();
+      list?.clear();
     }
   } catch (e) {
     print(e.toString());

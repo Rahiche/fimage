@@ -14,8 +14,9 @@ import 'gif_image_info.dart';
 
 class GifDecoder extends Decoder {
   Future<BaseMultiImageInfo> decode(Uint8List data,
-      {FirstFrameListener firstFrameListener}) async {
-    ui.Codec codec = await PaintingBinding.instance.instantiateImageCodec(data);
+      {FirstFrameListener? firstFrameListener}) async {
+    ui.Codec codec =
+        await PaintingBinding.instance!.instantiateImageCodec(data);
     if (codec.frameCount == 0)
       throw Exception('GifDecoder decode is an empty codec');
 

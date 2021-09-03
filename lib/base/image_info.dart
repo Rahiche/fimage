@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class BaseMultiImageInfo {
-  final List<BaseImageInfo> frameInfoList;
+  final List<BaseImageInfo>? frameInfoList;
 
   /// Number of times to repeat the animation.
   /// * 0 when the animation should be played once.
@@ -11,11 +11,11 @@ class BaseMultiImageInfo {
 
   int get frameCount {
     if (frameInfoList == null) return 0;
-    return frameInfoList.length;
+    return frameInfoList!.length;
   }
 
   BaseMultiImageInfo(
-      {@required this.frameInfoList,
+      {required this.frameInfoList,
       this.repetitionCount = 0,
       this.totalDuration = const Duration(milliseconds: 0)});
 }

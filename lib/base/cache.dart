@@ -3,9 +3,9 @@ import 'image_info.dart';
 ///image cache
 class FImageCache {
   final int maximumSize;
-  FImageCache({int maximumSize}) : maximumSize = maximumSize ?? 1000;
+  FImageCache({int? maximumSize}) : maximumSize = maximumSize ?? 1000;
 
-  final _cache = <String, BaseMultiImageInfo>{};
+  final _cache = <String, BaseMultiImageInfo?>{};
 
   void clear() {
     _cache.clear();
@@ -15,7 +15,7 @@ class FImageCache {
     return _cache.containsKey(key);
   }
 
-  BaseMultiImageInfo get(String key) {
+  BaseMultiImageInfo? get(String key) {
     if (!containsKey(key)) {
       return null;
     }
@@ -24,16 +24,16 @@ class FImageCache {
     return imageInfo;
   }
 
-  BaseMultiImageInfo putIfAbsent(
-      String key, BaseMultiImageInfo Function() ifAbsent) {
+  BaseMultiImageInfo? putIfAbsent(
+      String key, BaseMultiImageInfo? Function() ifAbsent) {
     var imageInfo = _cache.putIfAbsent(key, () => ifAbsent());
     _checkCacheSize();
     return imageInfo;
   }
 
-  BaseMultiImageInfo update(
+  BaseMultiImageInfo? update(
       String key,
-      BaseMultiImageInfo Function(BaseMultiImageInfo imageInfo) update,
+      BaseMultiImageInfo Function(BaseMultiImageInfo? imageInfo) update,
       BaseMultiImageInfo Function() ifAbsent) {
     var imageInfo = _cache.update(key, (value) => update(value),
         ifAbsent: () => ifAbsent());
@@ -44,7 +44,7 @@ class FImageCache {
   }
 
   bool evict(Object key) {
-    final BaseMultiImageInfo pendingImage = _cache.remove(key);
+    final BaseMultiImageInfo? pendingImage = _cache.remove(key);
     if (pendingImage != null) {
       return true;
     }
